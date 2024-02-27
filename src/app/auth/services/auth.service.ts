@@ -14,12 +14,15 @@ export class AuthService {
   private http = inject( HttpClient );
 
   private _currentUser = signal<User | null>( null );
-  private _authStatus = signal<AuthStatus>( AuthStatus.cheking );
+  private _authStatus = signal<AuthStatus>( AuthStatus.checking );
 
+  // Al mundo exterior
   public currentUser = computed( () => this._currentUser() );
-  public authStatus =computed( () => this._authStatus() );
+  public authStatus = computed( () => this._authStatus() );
 
-  constructor() { }
+  constructor() {
+    this.checkAuthStatus().subscribe();
+  }
 
 
   private setAuthentication(user: User, token: string): boolean {
@@ -37,10 +40,7 @@ export class AuthService {
 
     return this.http.post<LoginResponse>( url, body )
       .pipe(
-        tap( ({ user, token }) => {
-          this.setAuthentication(user, token);
-        }),
-        map( () => true ),
+        map( ({ user, token }) => this.setAuthentication(user, token)),
         // TODO: Manejo Errores
         catchError( err => throwError( () => err.error.message ))
       );
@@ -57,7 +57,7 @@ export class AuthService {
 
     return this.http.get<CheckTokenResponse>(url , { headers})
       .pipe(
-        map( ({ token, user }) => this.setAuthentication(user, token)),
+        map( ({ user, token }) => this.setAuthentication(user, token)),
         // Error
         catchError( () => {
           this._authStatus.set(AuthStatus.notAuthenticated);
