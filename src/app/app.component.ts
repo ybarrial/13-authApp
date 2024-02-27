@@ -14,7 +14,6 @@ export class AppComponent {
   private router = inject( Router );
 
   public finishedAuthCheck = computed<boolean>( () => {
-    console.log(this.authService.authStatus() )
     if( this.authService.authStatus() === AuthStatus.checking ) {
       return false;
     }
@@ -22,7 +21,6 @@ export class AppComponent {
   });
 
   public authStatusChangedEffect = effect( () => {
-    console.log('authStatus: ', this.authService.authStatus());
     switch (this.authService.authStatus()) {
       case AuthStatus.checking:
         return;
